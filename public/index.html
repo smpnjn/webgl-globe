@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Globe</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+        <script src="script.js" type="module"></script>
+        <script src="https://kit.fontawesome.com/48764efa36.js" crossorigin="anonymous"></script>
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <script id="vertex-shader" type="x-shader/x-vertex">
+            varying vec2 vUv;
+
+            uniform sampler2D getTexture1;
+            void main() {
+                vUv = uv;
+                vec4 bumpData = texture2D( getTexture1, uv );
+                float displacement = 20.0 * bumpData.r * bumpData.a;
+
+                vec3 newPosition = position + normal * displacement;
+
+                gl_Position =  projectionMatrix * modelViewMatrix * vec4(newPosition,1.0);
+            }
+        </script>
+        
+        <script id="fragment-shader" type="x-shader/x-fragment">
+            vec3 rgb(float r, float g, float b) {
+                return vec3(r / 255., g / 255., b / 255.);
+            }
+        
+            vec3 rgb(float c) {
+                return vec3(c / 255., c / 255., c / 255.);
+            }
+
+            varying vec2 vUv;
+
+            uniform sampler2D getTexture1;
+            uniform vec3 u_color1;
+            uniform vec3 u_color2;
+            uniform vec3 u_time;
+
+            void main(void) {
+        
+                vec3 c1 = rgb(u_color1.r, u_color1.g, u_color1.b);
+                vec3 c2 = rgb(u_color2.r, u_color2.g, u_color2.b);
+
+                vec4 bumpData = texture2D(getTexture1, vUv);
+                if(bumpData.a < 0.05) {
+                    gl_FragColor = vec4(c2, 0.5);
+                } else {
+                    gl_FragColor = ( (bumpData.a)  * (1. - bumpData.r) ) * vec4(c1, 1.) * 0.65;
+                }
+            }
+        </script>    
+    </body>
+</html>
